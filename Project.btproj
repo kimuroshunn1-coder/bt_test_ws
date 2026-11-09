@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root BTCPP_format="4" project_name="Project">
+    <include path="src/bt_script_test/config/tree.xml"/>
+    <!-- Description of Node Models (used by Groot) -->
+    <TreeNodesModel>
+        <Action ID="SaySomething">
+            <input_port name="message" type="std::string"/>
+        </Action>
+    </TreeNodesModel>
+</root>

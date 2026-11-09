@@ -1,0 +1,12 @@
+<root BTCPP_format="4">
+    <TreeNodesModel>
+        <Action ID="BringMeService">
+            <input_port name="command" type="std::string"/>
+            <output_port name="answer" type="std::string"/>
+            <input_port name="service_name" type="std::string" default="">Service name</input_port>
+        </Action>
+        <Action ID="SaySomething">
+            <input_port name="message" type="std::string"/>
+        </Action>
+    </TreeNodesModel>
+</root>
