@@ -13,6 +13,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <behaviortree_ros2/bt_service_node.hpp>
 #include <airobot_interfaces/srv/string_command.hpp>
+#include <behaviortree_ros2/bt_action_node.hpp>
+#include <airobot_interfaces/action/string_command.hpp>
 
 enum Color
 {
@@ -161,6 +163,82 @@ public:
   }
 };
 
+class BringMeActionNode :
+  public BT::RosActionNode<
+       airobot_interfaces::action::StringCommand>
+{
+public:
+
+  using StringCommand =
+      airobot_interfaces::action::StringCommand;
+  BringMeActionNode(
+      const std::string& name,
+      const BT::NodeConfig& conf,
+      const BT::RosNodeParams& params)
+    : BT::RosActionNode<
+          StringCommand>(
+          name,
+          conf,
+          params)
+  {}
+
+  static BT::PortsList providedPorts()
+  {
+      return providedBasicPorts(
+      {
+          BT::InputPort<std::string>(
+              "command"),
+          BT::OutputPort<std::string>(
+              "answer")
+      });
+  }
+
+  bool setGoal(Goal& goal) override
+  {
+      auto command =
+          getInput<std::string>("command");
+      if(!command)
+      {
+          throw BT::RuntimeError(
+              "missing command");
+      }
+
+      goal.command =
+          command.value();
+      std::cout
+          << "Goal: "
+          << goal.command
+          << std::endl;
+      return true;
+  }
+
+  BT::NodeStatus onFeedback(
+      const std::shared_ptr<
+          const Feedback> feedback
+  ) override
+  {
+      std::cout
+          << "Feedback: "
+          << feedback->process
+          << std::endl;
+      return BT::NodeStatus::RUNNING;
+  }
+
+  BT::NodeStatus onResultReceived(
+      const WrappedResult& result
+  ) override
+  {
+      std::cout
+          << "Result: "
+          << result.result->answer
+          << std::endl;
+      setOutput(
+          "answer",
+          result.result->answer);
+      return BT::NodeStatus::SUCCESS;
+  }
+};
+
 int main(int argc, char** argv)
 {
   rclcpp::init(argc, argv);
@@ -178,6 +256,7 @@ int main(int argc, char** argv)
   BT::BehaviorTreeFactory factory;
   factory.registerNodeType<SaySomething>("SaySomething");
   factory.registerNodeType<BringMeServiceNode>("BringMeService", params);
+  factory.registerNodeType<BringMeActionNode>("BringMeAction", params);
   factory.registerScriptingEnums<Color>();
   factory.registerScriptingEnum("THE_ANSWER", 42);
   std::string xml_file =
@@ -204,4 +283,3 @@ int main(int argc, char** argv)
   rclcpp::shutdown();
   return 0;
 }
-
